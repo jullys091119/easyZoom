@@ -12,29 +12,33 @@ import { collection, getDocs } from "firebase/firestore";
 import { db } from "./firebase";
 
 function App() {
+  const [meetings, setMeetings] = useState<any[]>([]);
+
   const [meeting, setMeeting] = useState<any>(null);
 
   const [started, setStarted] = useState(false);
 
-  // Obtener reunión desde Firebase
+  // Obtener todas las reuniones desde Firebase
   useEffect(() => {
-    async function loadMeeting() {
+    async function loadMeetings() {
       try {
         const snapshot = await getDocs(collection(db, "meetings"));
 
-        snapshot.forEach((doc) => {
-          console.log("Documento:", doc.id);
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
 
-          console.log("Datos:", doc.data());
+          ...doc.data(),
+        }));
 
-          setMeeting(doc.data());
-        });
+        console.log("Reuniones:", data);
+
+        setMeetings(data);
       } catch (error) {
-        console.error("Error cargando reunión:", error);
+        console.error("Error cargando reuniones:", error);
       }
     }
 
-    loadMeeting();
+    loadMeetings();
   }, []);
 
   const zoom = useZoomMeeting({
@@ -45,7 +49,7 @@ function App() {
     pass: meeting?.pass || "",
   });
 
-  // Entrada automática a la reunión
+  // Entrada automática después de seleccionar reunión
   useEffect(() => {
     if (!started && meeting) {
       setStarted(true);
@@ -87,11 +91,28 @@ function App() {
 
   return (
     <div className="App">
-      {!meeting && <h1>Cargando reunión...</h1>}
+      {!meeting && !zoom.joined && (
+        <>
+          <h1>Selecciona una reunión</h1>
 
-      {meeting && !zoom.joined && <h1>Conectando a la reunión...</h1>}
+          {meetings.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => {
+                setMeeting(item);
 
-      {zoom.joined && <h1>Reunión conectada</h1>}
+                setStarted(false);
+              }}
+            >
+              {item.user}
+            </button>
+          ))}
+        </>
+      )}
+
+      {meeting && !zoom.joined && <h1>Conectando a {meeting.user}...</h1>}
+
+      {zoom.joined && <h1>Reunión conectada: {meeting.user}</h1>}
     </div>
   );
 }
