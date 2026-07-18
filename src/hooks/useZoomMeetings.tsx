@@ -7,8 +7,8 @@ ZoomMtg.prepareWebSDK();
 export function useZoomMeeting() {
   const authEndpoint = "http://localhost:4000/signature";
 
-  const meetingNumber = "86765805944";
-  const passWord = "5xD7jw";
+  const meetingNumber = "84510630453";
+  const passWord = "3StQhm";
 
   const role = 0;
 
@@ -88,7 +88,9 @@ export function useZoomMeeting() {
   function updateAudioState() {
     ZoomMtg.getCurrentUser({
       success: (res: any) => {
-        setMuted(res.result.currentUser.muted);
+        const user = res.result.currentUser;
+
+        setMuted(user.muted);
       },
 
       error: console.error,
@@ -96,22 +98,27 @@ export function useZoomMeeting() {
   }
 
   async function startMeeting() {
-    const response = await fetch(authEndpoint, {
-      method: "POST",
+    try {
+      const response = await fetch(authEndpoint, {
+        method: "POST",
 
-      headers: {
-        "Content-Type": "application/json",
-      },
+        headers: {
+          "Content-Type": "application/json",
+        },
 
-      body: JSON.stringify({
-        meetingNumber,
-        role,
-      }),
-    });
+        body: JSON.stringify({
+          meetingNumber,
 
-    const data = await response.json();
+          role,
+        }),
+      });
 
-    initZoom(data.signature);
+      const data = await response.json();
+
+      initZoom(data.signature);
+    } catch (error) {
+      console.error("Error obteniendo signature:", error);
+    }
   }
 
   function initZoom(signature: string) {
@@ -197,6 +204,7 @@ export function useZoomMeeting() {
 
     if (!button) {
       console.log("boton camara no encontrado");
+
       return;
     }
 
