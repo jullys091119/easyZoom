@@ -5,7 +5,7 @@ ZoomMtg.preLoadWasm();
 ZoomMtg.prepareWebSDK();
 
 export function useZoomMeeting() {
-  const authEndpoint = "http://localhost:4000/signature";
+  const authEndpoint = "https://easyzoom.onrender.com/signature";
 
   const meetingNumber = "84510630453";
   const passWord = "3StQhm";
