@@ -8,7 +8,13 @@ import { useZoomMeeting } from "./hooks/useZoomMeetings";
 import ZoomControls from "./components/ZoomControls";
 
 function App() {
-  const zoom = useZoomMeeting();
+  
+  const zoom = useZoomMeeting({
+  userName: "Carlos",
+  userEmail: "",
+  meetingNumber: "82293951462",
+  passWord: "cn1auQ"
+});
 
   const [started, setStarted] = useState(false);
 
