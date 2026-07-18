@@ -4,22 +4,41 @@ import { ZoomMtg } from "@zoom/meetingsdk";
 ZoomMtg.preLoadWasm();
 ZoomMtg.prepareWebSDK();
 
-export function useZoomMeeting() {
+interface ZoomConfig {
+  user: string;
+
+  number: string;
+
+  pass: string;
+}
+
+export function useZoomMeeting({
+  user,
+
+  number,
+
+  pass,
+}: ZoomConfig) {
   const authEndpoint = "https://easyzoom.onrender.com/signature";
 
-  const meetingNumber = "82293951462";
-  const passWord = "cn1auQ";
+  const meetingNumber = number;
+
+  const passWord = pass;
 
   const role = 0;
 
-  const userName = "React";
+  const userName = user;
+
   const userEmail = "";
 
   const leaveUrl = "http://localhost:5173";
 
   const [joined, setJoined] = useState(false);
+
   const [muted, setMuted] = useState(true);
+
   const [camera, setCamera] = useState(false);
+
   const [hand, setHand] = useState(false);
 
   function watchPreview() {
@@ -81,6 +100,7 @@ export function useZoomMeeting() {
 
     observer.observe(document.body, {
       childList: true,
+
       subtree: true,
     });
   }

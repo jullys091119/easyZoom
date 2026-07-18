@@ -7,18 +7,52 @@ import { useZoomMeeting } from "./hooks/useZoomMeetings";
 
 import ZoomControls from "./components/ZoomControls";
 
+import { collection, getDocs } from "firebase/firestore";
+
+import { db } from "./firebase";
+
 function App() {
-  const zoom = useZoomMeeting();
+  const [meeting, setMeeting] = useState<any>(null);
 
   const [started, setStarted] = useState(false);
 
+  // Obtener reunión desde Firebase
+  useEffect(() => {
+    async function loadMeeting() {
+      try {
+        const snapshot = await getDocs(collection(db, "meetings"));
+
+        snapshot.forEach((doc) => {
+          console.log("Documento:", doc.id);
+
+          console.log("Datos:", doc.data());
+
+          setMeeting(doc.data());
+        });
+      } catch (error) {
+        console.error("Error cargando reunión:", error);
+      }
+    }
+
+    loadMeeting();
+  }, []);
+
+  const zoom = useZoomMeeting({
+    user: meeting?.user || "",
+
+    number: meeting?.number || "",
+
+    pass: meeting?.pass || "",
+  });
+
   // Entrada automática a la reunión
   useEffect(() => {
-    if (!started) {
+    if (!started && meeting) {
       setStarted(true);
+
       zoom.startMeeting();
     }
-  }, [started, zoom]);
+  }, [started, meeting, zoom]);
 
   // Crear controles cuando entra al Zoom
   useEffect(() => {
@@ -41,29 +75,23 @@ function App() {
         onCamera={zoom.toggleCamera}
         onHand={zoom.toggleHand}
         onLeave={zoom.leave}
-      />
+      />,
     );
 
     return () => {
       root.unmount();
+
       container.remove();
     };
-  }, [
-    zoom.joined,
-    zoom.muted,
-    zoom.camera,
-    zoom.hand,
-  ]);
+  }, [zoom.joined, zoom.muted, zoom.camera, zoom.hand]);
 
   return (
     <div className="App">
-      {!zoom.joined && (
-        <h1>Conectando a la reunión...</h1>
-      )}
+      {!meeting && <h1>Cargando reunión...</h1>}
 
-      {zoom.joined && (
-        <h1>Reunión conectada</h1>
-      )}
+      {meeting && !zoom.joined && <h1>Conectando a la reunión...</h1>}
+
+      {zoom.joined && <h1>Reunión conectada</h1>}
     </div>
   );
 }
