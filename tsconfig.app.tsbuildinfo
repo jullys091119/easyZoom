@@ -1,1 +1,1 @@
-{"root":["./src/app-new.tsx","./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/meetingwelcomescreen.tsx","./src/components/zoomcontrols.tsx","./src/hooks/usezoommeetings.tsx"],"errors":true,"version":"5.9.3"}
+{"root":["./src/app-new.tsx","./src/app.tsx","./src/firebase.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/meetingwelcomescreen.tsx","./src/components/zoomcontrols.tsx","./src/hooks/usezoommeetings.tsx"],"version":"5.9.3"}
