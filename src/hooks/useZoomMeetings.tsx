@@ -18,16 +18,9 @@ export function useZoomMeeting() {
   const leaveUrl = "http://localhost:5173";
 
   const [joined, setJoined] = useState(false);
-
   const [muted, setMuted] = useState(true);
-
   const [camera, setCamera] = useState(false);
-
   const [hand, setHand] = useState(false);
-
-  // ---------------------------------------
-  // CONTROL DEL PREVIEW ANTES DE ENTRAR
-  // ---------------------------------------
 
   function watchPreview() {
     const observer = new MutationObserver(() => {
@@ -51,17 +44,9 @@ export function useZoomMeeting() {
         return;
       }
 
-      console.log("Preview encontrado");
-
       observer.disconnect();
 
-      // Esperamos a que Zoom inicialice audio/video
-
       setTimeout(() => {
-        // ---------------------
-        // APAGAR AUDIO
-        // ---------------------
-
         const currentAudio = document.querySelector(
           "#preview-audio-control-button",
         ) as HTMLButtonElement | null;
@@ -69,18 +54,10 @@ export function useZoomMeeting() {
         if (currentAudio) {
           const audioState = currentAudio.getAttribute("aria-label");
 
-          console.log("Audio estado:", audioState);
-
           if (audioState === "Mute") {
-            console.log("apagando audio");
-
             currentAudio.click();
           }
         }
-
-        // ---------------------
-        // APAGAR CAMARA
-        // ---------------------
 
         const currentVideo = document.querySelector(
           "#preview-video-control-button",
@@ -89,23 +66,13 @@ export function useZoomMeeting() {
         if (currentVideo) {
           const videoState = currentVideo.getAttribute("aria-label");
 
-          console.log("Video estado:", videoState);
-
           if (videoState === "Stop Video") {
-            console.log("apagando camara");
-
             currentVideo.click();
           }
         }
 
-        // ---------------------
-        // ESCONDER PREVIEW
-        // ---------------------
-
         setTimeout(() => {
           preview.style.display = "none";
-
-          console.log("Entrando automaticamente");
 
           joinBtn.click();
         }, 500);
@@ -121,9 +88,7 @@ export function useZoomMeeting() {
   function updateAudioState() {
     ZoomMtg.getCurrentUser({
       success: (res: any) => {
-        const user = res.result.currentUser;
-
-        setMuted(user.muted);
+        setMuted(res.result.currentUser.muted);
       },
 
       error: console.error,
@@ -140,7 +105,6 @@ export function useZoomMeeting() {
 
       body: JSON.stringify({
         meetingNumber,
-
         role,
       }),
     });
@@ -165,9 +129,6 @@ export function useZoomMeeting() {
       leaveOnPageUnload: true,
 
       success: () => {
-        // IMPORTANTE:
-        // antes del join
-
         watchPreview();
 
         ZoomMtg.join({
@@ -190,7 +151,7 @@ export function useZoomMeeting() {
               updateAudioState();
             }, 1000);
 
-            ZoomMtg.inMeetingServiceListener(
+            (ZoomMtg.inMeetingServiceListener as any)(
               "onUserAudioStatusChange",
 
               () => {
@@ -229,10 +190,6 @@ export function useZoomMeeting() {
     });
   }
 
-  // ---------------------------------------
-  // CAMARA USA BOTON REAL DE ZOOM
-  // ---------------------------------------
-
   function toggleCamera() {
     const button = document.querySelector(
       ".send-video-container__btn",
@@ -240,7 +197,6 @@ export function useZoomMeeting() {
 
     if (!button) {
       console.log("boton camara no encontrado");
-
       return;
     }
 
@@ -277,10 +233,6 @@ export function useZoomMeeting() {
     });
   }
 
-  // ---------------------------------------
-  // ICONO CAMARA
-  // ---------------------------------------
-
   useEffect(() => {
     if (!joined) return;
 
@@ -294,19 +246,15 @@ export function useZoomMeeting() {
       setCamera(!text.includes("Start Video"));
     });
 
-    observer.observe(
-      document.body,
+    observer.observe(document.body, {
+      subtree: true,
 
-      {
-        subtree: true,
+      childList: true,
 
-        childList: true,
+      attributes: true,
 
-        attributes: true,
-
-        characterData: true,
-      },
-    );
+      characterData: true,
+    });
 
     return () => {
       observer.disconnect();
