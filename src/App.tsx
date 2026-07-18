@@ -1,77 +1,69 @@
 import "./App.css";
-import { ZoomMtg } from "@zoom/meetingsdk";
 
-ZoomMtg.preLoadWasm();
-ZoomMtg.prepareWebSDK();
+import { useEffect, useState } from "react";
+import { createRoot, Root } from "react-dom/client";
+
+import { useZoomMeeting } from "./hooks/useZoomMeetings";
+
+import ZoomControls from "./components/ZoomControls";
 
 function App() {
-  const authEndpoint = ""; // http://localhost:4000
-  const meetingNumber = "";
-  const passWord = "";
-  const role = 0;
-  const userName = "React";
-  const userEmail = "";
-  const registrantToken = "";
-  const zakToken = "";
-  const leaveUrl = "http://localhost:5173";
+  const zoom = useZoomMeeting();
 
-  const getSignature = async () => {
-    try {
-      const req = await fetch(authEndpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          meetingNumber: meetingNumber,
-          role: role,
-          videoWebRtcMode: 1,
-        }),
-      });
-      const res = await req.json();
-      const signature = res.signature as string;
-      startMeeting(signature);
-    } catch (e) {
-      console.log(e);
+  const [started, setStarted] = useState(false);
+
+  // Entrada automática a la reunión
+  useEffect(() => {
+    if (!started) {
+      setStarted(true);
+      zoom.startMeeting();
     }
-  };
+  }, [started, zoom]);
 
-  function startMeeting(signature: string) {
-    document.getElementById("zmmtg-root")!.style.display = "block";
+  // Crear controles cuando entra al Zoom
+  useEffect(() => {
+    if (!zoom.joined) return;
 
-    ZoomMtg.init({
-      leaveUrl: leaveUrl,
-      patchJsMedia: true,
-      leaveOnPageUnload: true,
-      success: (success: unknown) => {
-        console.log(success);
-        // can this be async?
-        ZoomMtg.join({
-          signature: signature,
-          meetingNumber: meetingNumber,
-          passWord: passWord,
-          userName: userName,
-          userEmail: userEmail,
-          tk: registrantToken,
-          zak: zakToken,
-          success: (success: unknown) => {
-            console.log(success);
-          },
-          error: (error: unknown) => {
-            console.log(error);
-          },
-        });
-      },
-      error: (error: unknown) => {
-        console.log(error);
-      },
-    });
-  }
+    const container = document.createElement("div");
+
+    container.id = "zoom-controls-container";
+
+    document.body.appendChild(container);
+
+    const root: Root = createRoot(container);
+
+    root.render(
+      <ZoomControls
+        muted={zoom.muted}
+        camera={zoom.camera}
+        hand={zoom.hand}
+        onMute={zoom.toggleMute}
+        onCamera={zoom.toggleCamera}
+        onHand={zoom.toggleHand}
+        onLeave={zoom.leave}
+      />
+    );
+
+    return () => {
+      root.unmount();
+      container.remove();
+    };
+  }, [
+    zoom.joined,
+    zoom.muted,
+    zoom.camera,
+    zoom.hand,
+  ]);
 
   return (
     <div className="App">
-      <main>
-        <h1>Zoom Meeting SDK Sample React</h1>
-        <button onClick={getSignature}>Join Meeting</button>
-      </main>
+      {!zoom.joined && (
+        <h1>Conectando a la reunión...</h1>
+      )}
+
+      {zoom.joined && (
+        <h1>Reunión conectada</h1>
+      )}
     </div>
   );
 }

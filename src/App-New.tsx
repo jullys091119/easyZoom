@@ -1,71 +1,47 @@
 import "./App.css";
-import ZoomMtgEmbedded from "@zoom/meetingsdk/embedded";
 
 function App() {
-  const client = ZoomMtgEmbedded.createClient();
+  const authEndpoint = "http://localhost:4000/signature";
 
-  const authEndpoint = ""; // http://localhost:4000
-  const meetingNumber = "";
-  const passWord = "";
-  const role = 0;
-  const userName = "React";
-  const userEmail = "";
-  const registrantToken = "";
-  const zakToken = "";
+  const meetingNumber = "86756125662";
 
   const getSignature = async () => {
     try {
-      const req = await fetch(authEndpoint, {
+      console.log("Llamando al servidor...");
+
+      const response = await fetch(authEndpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+
+        headers: {
+          "Content-Type": "application/json",
+        },
+
         body: JSON.stringify({
-          meetingNumber: meetingNumber,
-          role: role,
-          videoWebRtcMode: 1,
+          meetingNumber,
+
+          role: 0,
         }),
       });
-      const res = await req.json();
-      const signature = res.signature as string;
-      startMeeting(signature);
-    } catch (e) {
-      console.log(e);
+
+      console.log("Código respuesta:", response.status);
+
+      const data = await response.json();
+
+      console.log("Respuesta del servidor:");
+
+      console.log(data);
+
+      alert("Signature recibida: " + data.signature.substring(0, 30) + "...");
+    } catch (error) {
+      console.error("Error:", error);
     }
   };
 
-  async function startMeeting(signature: string) {
-    const meetingSDKElement = document.getElementById("meetingSDKElement")!;
-    try {
-      await client.init({
-        zoomAppRoot: meetingSDKElement,
-        language: "en-US",
-        patchJsMedia: true,
-        leaveOnPageUnload: true,
-      });
-      await client.join({
-        signature: signature,
-        meetingNumber: meetingNumber,
-        password: passWord,
-        userName: userName,
-        userEmail: userEmail,
-        tk: registrantToken,
-        zak: zakToken,
-      });
-      console.log("joined successfully");
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
   return (
     <div className="App">
-      <main>
-        <h1>Zoom Meeting SDK Sample React</h1>
-        {/* For Component View */}
-        <div id="meetingSDKElement">
-          {/* Zoom Meeting SDK Component View Rendered Here */}
-        </div>
-        <button onClick={getSignature}>Join Meeting</button>
-      </main>
+      <h1>Prueba Zoom Signature</h1>
+
+      <button onClick={getSignature}>Pedir Signature</button>
     </div>
   );
 }
